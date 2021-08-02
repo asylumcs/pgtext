@@ -1,6 +1,8 @@
 # pgtext
 
-A text analysis program used before/during upload to Project Gutenberg
+A text analysis program used before/during upload to Project Gutenberg.
+It may be used standalone by cloning this repo locally. It is also
+part of the Uploader's Workbench (UWB) at Project Gutenberg.
 
 ## Overview
 
@@ -24,7 +26,7 @@ Examples of tests it makes:
 
 As a standalone program use this command line:
 
-    `python3 pgtext.py -i sourcefile.txt -o report.htm`
+    python3 pgtext.py -i sourcefile.txt -o report.htm
 
 You may also include "-v" to get verbose reports.
 
@@ -33,6 +35,7 @@ You may also include "-v" to get verbose reports.
 This is one of the tests available in the
 [UWB](https://uwb.pglaf.org).
 Currently it runs there in 'verbose' mode, providing all reports.
+You must have a user account on the pglaf server to use the UWB.
 
 ## Requirements
 
