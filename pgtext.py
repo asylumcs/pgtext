@@ -208,7 +208,7 @@ def report3(s):
     reports3.append(s)
 
 # determine if the text uses straight or curly quotes. use that to
-# flag those that are inconsistent later
+# flag those that are inconsistent later if curly quotes are used.
 
 count_straight = 0
 count_curly = 0
