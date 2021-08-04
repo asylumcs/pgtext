@@ -27,6 +27,7 @@ import tempfile
 import datetime
 import regex as re
 import pprint
+import unicodedata
 
 theWordlist = set([])  # set of words, contractions from wordlist.txt
 reports = {}  # a map of description to list
@@ -365,8 +366,9 @@ for pn, ap in enumerate(paras.parg):
     # allow special pattern for DP-style thought break
     m = re.finditer(r'[^A-Za-z0-9 \.,:;“”‘’\-\?—!\(\)_\[\]]+', s)
     for item in m:
-        if not re.match('^\s+\*\s+\*\s+\*\s+\*\s+\*', s):  # allow DP thought break
-            report2(pn, item, f"unusual character {item.group(0)}")
+        if re.match('^\s+\*\s+\*\s+\*\s+\*\s+\*', s):  # allow DP thought break
+            continue
+        report2(pn, item, f"unusual character {unicodedata.name(item.group(0))}")
 
     NOCOMMAPATTERN = "(^|[\p{Z}\p{P}])(the,|it’s,|their,|an,|mrs,|a,|our,\
     |that’s,|its,|whose,|every,|i’ll,|your,|my,|mr,|mrs,|mss,|mssrs,|ft,|\
@@ -516,6 +518,26 @@ if len(shortest) > 0:
         atup = shortest.pop()
         report3(f"  {atup[0]+1:5}: {wb[atup[0]]} ({atup[1]})")
         count -= 1
+
+
+# check: common he/be, hut/but and had/bad checks
+
+HADBADPATTERN = "\bi bad\b|\byou bad\b|\bhe bad\b|\bshe bad\b|\bthey bad\b|\ba had\b|\bthe had\b"
+HUTBUTPATTERN = "(, hut\P{L})|(; hut\P{L})"
+HEBEPATTERN   = "\bto he\b|\bis be\b|\bbe is\b|\bwas be\b|\bbe would\b|\bbe could\b"
+
+for pn, ap in enumerate(paras.parg): # paragraph at a time
+    s = ap.ptext # get a paragraph as one string
+
+    m = re.finditer(HADBADPATTERN, s)
+    for item in m:
+        report2(pn, item, 'had/bad suspect')
+    m = re.finditer(HUTBUTPATTERN, s)
+    for item in m:
+        report2(pn, item, 'hut/but suspect')
+    m = re.finditer(HEBEPATTERN, s)
+    for item in m:
+        report2(pn, item, 'he/be suspect')
 
 # save results to specified file
 
