@@ -364,7 +364,7 @@ for pn, ap in enumerate(paras.parg):
 
     # unusual characters
     # allow special pattern for DP-style thought break
-    m = re.finditer(r'[^A-Za-z0-9 \.,:;“”‘’\-\?—!\(\)_\[\]]+', s)
+    m = re.finditer(r'[^A-Za-z0-9 \.,:;“”‘’\-\?—!\(\)_\[\]]', s)
     for item in m:
         if re.match('^\s+\*\s+\*\s+\*\s+\*\s+\*', s):  # allow DP thought break
             continue
