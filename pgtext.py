@@ -33,6 +33,8 @@ theWordlist = set([])  # set of words, contractions from wordlist.txt
 reports = {}  # a map of description to list
 reports3 = []  # top-level sequential reports
 
+quotetype = ""   # straight or curly quote predominance
+
 def fatal(msg):
     """ fatal error: print message and exit """
     print(f"FATAL: {msg}")
@@ -221,6 +223,10 @@ for pn, ap in enumerate(paras.parg):
     count_curly += s.count("“")
     count_curly += s.count("’")
     count_curly += s.count("‘")
+if count_curly > count_straight:
+    quotetype = 'curly'
+else:
+    quotetype = 'straight'
 if count_curly > 0 and count_straight > 0:
     report3(f"error: mixed quotes found. curly:{count_curly} straight:{count_straight}")
 
@@ -364,7 +370,10 @@ for pn, ap in enumerate(paras.parg):
 
     # unusual characters
     # allow special pattern for DP-style thought break
-    m = re.finditer(r'[^A-Za-z0-9 \.,:;“”‘’\-\?—!\(\)_\[\]]', s)
+    if quotetype == 'straight':
+        m = re.finditer(r'[^A-Za-z0-9 \.,:;"\'\-\?—!\(\)_\[\]]', s)
+    else:
+        m = re.finditer(r'[^A-Za-z0-9 \.,:;“”‘’\-\?—!\(\)_\[\]]', s)
     for item in m:
         if re.match('^\s+\*\s+\*\s+\*\s+\*\s+\*', s):  # allow DP thought break
             continue
