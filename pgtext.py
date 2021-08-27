@@ -5,6 +5,10 @@
   pgtext.py
   MIT license (c) 2021 Asylum Computer Services LLC
   https://asylumcs.net
+  
+  TODO: mixed case in word. ignore MacPherson if it occurs many times.
+        staircase versus "stair-case"
+        staircase versus "stair case"
 """
 
 # pylint: disable=C0103, R0912, R0915, E1101
@@ -257,7 +261,7 @@ for pn, ap in enumerate(paras.parg):
     m = re.finditer(r'(\p{L}+)-([\p{L}-]+)', s)
     for item in m:
         theword = item.group(0)
-        if theword in prop:
+        if theword in hypwp:
             hypwp[theword] += 1
         else:
             hypwp[theword] = 1
@@ -271,7 +275,7 @@ for item in hypwp:
 for pn, ap in enumerate(paras.parg):
     s = ap.ptext
     for lookfor in nh_hypwp:
-        m = re.finditer(lookfor, s)
+        m = re.finditer('\P{L}'+lookfor+'\P{L}', s)
         for item in m:
             if lookfor in nhypwp:
                 nhypwp[lookfor] += 1
@@ -304,7 +308,7 @@ if len(nhypwp) > 0:
                     theline = paras.startline(pn)+line
                     report3(f"    {theline}: {wb[theline]}")
                     count_hthephrase += 1
-        
+
 # run tests, paragraph at-a-time
 for pn, ap in enumerate(paras.parg):
     s = ap.ptext # get a paragraph as one string
