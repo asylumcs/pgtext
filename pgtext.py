@@ -33,6 +33,8 @@ theWordlist = set([])  # set of words, contractions from wordlist.txt
 reports = {}  # a map of description to list
 reports3 = []  # top-level sequential reports
 proper_names = []  # list of probable proper names
+hypwp = {}  # map of hyphenated words/phrases
+nhypwp = {}  # corresponding map of non-hyphenated words/phrases
 quotetype = ""   # straight or curly quote predominance
 
 def fatal(msg):
@@ -241,12 +243,68 @@ for pn, ap in enumerate(paras.parg):
             prop[theword] += 1
         else:
             prop[theword] = 1
+
 # any capitalized word that is not in the wordlist as lower-case 
 # and that occurs at least twice is maybe a proper name
 for item in prop:
     if not item.lower() in theWordlist and prop[item] >= 2:
         proper_names.append(item)
+        
+# identify hyphenated words/phrases with counts
+# 'desk-sergeant': 1, 'made-by-the-million': 1 ...
+for pn, ap in enumerate(paras.parg):
+    s = ap.ptext
+    m = re.finditer(r'(\p{L}+)-([\p{L}-]+)', s)
+    for item in m:
+        theword = item.group(0)
+        if theword in prop:
+            hypwp[theword] += 1
+        else:
+            hypwp[theword] = 1
 
+# construct non-hyphenated version of hypwp
+# list of non-hyphenated version of hyphenated words
+nh_hypwp = []  # list of non-hyphenated versions of hypwp
+for item in hypwp:
+    nh_hypwp.append(re.sub(r'-', ' ', item))
+
+for pn, ap in enumerate(paras.parg):
+    s = ap.ptext
+    for lookfor in nh_hypwp:
+        m = re.finditer(lookfor, s)
+        for item in m:
+            if lookfor in nhypwp:
+                nhypwp[lookfor] += 1
+            else:
+                nhypwp[lookfor] = 1       
+
+# every entry in nhypwp represents a match hyp and non-hyp same phrase
+if len(nhypwp) > 0:
+    report3("hyphenation/non-hyphenation phrase report")
+    for thephrase in nhypwp:
+        hthephrase = re.sub(' ', '-', thephrase)
+        report3( f"  \"{thephrase}\" ({nhypwp[thephrase]}) <-> \"{hthephrase}\" ({hypwp[hthephrase]})")
+        # find up to maxlist of each in the text
+        maxlist = 3
+        count_thephrase = 0
+        count_hthephrase = 0
+        for pn, ap in enumerate(paras.parg):
+            s = ap.ptext # get a paragraph as one string
+            if count_thephrase < maxlist:            
+                m = re.finditer(thephrase, s)
+                for item in m:
+                    line, _ = paras.trlate(pn, item.start())
+                    theline = paras.startline(pn)+line
+                    report3(f"    {theline}: {wb[theline]}")
+                    count_thephrase += 1
+            if count_hthephrase < maxlist:            
+                m2 = re.finditer(hthephrase, s)
+                for item in m2:
+                    line, _ = paras.trlate(pn, item.start())
+                    theline = paras.startline(pn)+line
+                    report3(f"    {theline}: {wb[theline]}")
+                    count_hthephrase += 1
+        
 # run tests, paragraph at-a-time
 for pn, ap in enumerate(paras.parg):
     s = ap.ptext # get a paragraph as one string
