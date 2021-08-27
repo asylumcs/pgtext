@@ -249,9 +249,14 @@ for pn, ap in enumerate(paras.parg):
         else:
             prop[theword] = 1
 
+# dictionary words that are common names
+special_prop = ["Bud", "Will", "Jack"]
+
 # any capitalized word that is not in the wordlist as lower-case 
 # and that occurs at least twice is maybe a proper name
 for item in prop:
+    if item in special_prop:
+        proper_names.append(item)    
     if not item.lower() in theWordlist and prop[item] >= 2:
         proper_names.append(item)
         
@@ -383,7 +388,6 @@ for pn, ap in enumerate(paras.parg):
         if not item.group(2) in allowed_mixed_case:
             report2(pn, item, "mixed case in word")
     
-    
     # -------------------------------------------------------------------------
     # rare to end word
     m = re.finditer(r'(cb|gb|pb|sb|tb|wh|fr|br|qu|tw|gl|fl|sw|gr|sl|cl|iy)($|[\p{Z}\p{P}])', s)
@@ -459,10 +463,8 @@ for pn, ap in enumerate(paras.parg):
     m = re.finditer(r'\, (\p{Lu}\p{L}+)', s)
     for item in m:
         # allow "If you say so, Morgan." using proper names list
-        if theword in proper_names:
-            next
         theword = item.group(1).lower()
-        if theword in theWordlist:
+        if not item.group(1) in proper_names and theword in theWordlist:
             report2(pn, item, f"period/comma suspect")
     
     # Blank Page placeholder
