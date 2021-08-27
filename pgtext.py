@@ -40,6 +40,7 @@ proper_names = []  # list of probable proper names
 hypwp = {}  # map of hyphenated words/phrases
 nhypwp = {}  # corresponding map of non-hyphenated words/phrases
 quotetype = ""   # straight or curly quote predominance
+allowed_mixed_case = []  # proper names with accepted mixed case 
 
 def fatal(msg):
     """ fatal error: print message and exit """
@@ -240,7 +241,7 @@ if count_curly > 0 and count_straight > 0:
 prop = {}  # map of capitalized words
 for pn, ap in enumerate(paras.parg):
     s = ap.ptext
-    m = re.finditer(r'\p{Lu}\p{Ll}+', s)
+    m = re.finditer(r'\p{Lu}\p{L}+', s)
     for item in m:
         theword = item.group(0)
         if theword in prop:
@@ -253,6 +254,11 @@ for pn, ap in enumerate(paras.parg):
 for item in prop:
     if not item.lower() in theWordlist and prop[item] >= 2:
         proper_names.append(item)
+        
+# save proper names with mixed capitalization
+for item in proper_names:
+    if re.search(r'.\p{Ll}\p{Lu}|.\p{Lu}\p{Ll}', item):
+        allowed_mixed_case.append(item)
         
 # identify hyphenated words/phrases with counts
 # 'desk-sergeant': 1, 'made-by-the-million': 1 ...
@@ -340,24 +346,45 @@ for pn, ap in enumerate(paras.parg):
         if not (item.group(1).isnumeric() and item.group(2).isnumeric()):
             report2(pn, item, "incorrectly spaced punctuation")
 
+    # -------------------------------------------------------------------------
     # mixed case in word (3 checks)
 
     # first upper followed by upper then lower somewhere in word
     # start of line or space or punctuation
     # two upper case in a row, optionally other characters, then
     # a lower case letter before the word ends
-    m = re.finditer(r'(^|[\p{Z}\p{P}])\p{Lu}\p{Lu}\p{L}?\p{Ll}', s)
-    for item in m:
-        report2(pn, item, "mixed case in word")
+    #m = re.finditer(r'(^|[\p{Z}\p{P}])\p{Lu}\p{Lu}\p{L}?\p{Ll}', s)
+    #for item in m:
+    #    report2(pn, item, "mixed case in word")
     # first upper followed by lower then upper somewhere in word
-    m = re.finditer(r'(^|[\p{Z}\p{P}])\p{Lu}[^\p{Z}\p{P}]*?\p{Ll}\p{Lu}', s)
-    for item in m:
-        report2(pn, item, "mixed case in word")
+    #m = re.finditer(r'(^|[\p{Z}\p{P}])\p{Lu}[^\p{Z}\p{P}]*?\p{Ll}\p{Lu}', s)
+    #for item in m:
+    #    report2(pn, item, "mixed case in word")
     # first lower followed by upper anywhere in word
-    m = re.finditer(r'(^|[\p{Z}\p{P}])\p{Ll}[^\p{Z}\p{P}]*?\p{Lu}', s)
-    for item in m:
-        report2(pn, item, "mixed case in word")
+    #m = re.finditer(r'(^|[\p{Z}\p{P}])\p{Ll}[^\p{Z}\p{P}]*?\p{Lu}', s)
+    #for item in m:
+    #    report2(pn, item, "mixed case in word")
 
+    # two upper followed by lower somewhere in word (HAPpY)
+    m = re.finditer(r'(^|[\p{Z}\p{P}])(\p{Lu}\p{Lu}\p{L}*\p{Ll}\p{L}*)([\p{Z}\p{P}]|$)', s)
+    for item in m:
+        if not item.group(2) in allowed_mixed_case:
+            report2(pn, item, "mixed case in word")
+
+    # first upper followed by lower then upper somewhere in word (HapPy) 
+    m = re.finditer(r'(^|[\p{Z}\p{P}])(\p{Lu}\p{Ll}\p{L}*\p{Lu}\p{L}*)([\p{Z}\p{P}]|$)', s)
+    for item in m:
+        if not item.group(2) in allowed_mixed_case:
+            report2(pn, item, "mixed case in word")
+    
+    # first lower followed by upper anywhere in word
+    m = re.finditer(r'(^|[\p{Z}\p{P}])(\p{Ll}\p{L}*\p{Lu}\p{L}*)([\p{Z}\p{P}]|$)', s)
+    for item in m:
+        if not item.group(2) in allowed_mixed_case:
+            report2(pn, item, "mixed case in word")
+    
+    
+    # -------------------------------------------------------------------------
     # rare to end word
     m = re.finditer(r'(cb|gb|pb|sb|tb|wh|fr|br|qu|tw|gl|fl|sw|gr|sl|cl|iy)($|[\p{Z}\p{P}])', s)
     for item in m:
