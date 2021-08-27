@@ -32,7 +32,7 @@ import unicodedata
 theWordlist = set([])  # set of words, contractions from wordlist.txt
 reports = {}  # a map of description to list
 reports3 = []  # top-level sequential reports
-
+proper_names = []  # list of probable proper names
 quotetype = ""   # straight or curly quote predominance
 
 def fatal(msg):
@@ -230,6 +230,23 @@ else:
 if count_curly > 0 and count_straight > 0:
     report3(f"error: mixed quotes found. curly:{count_curly} straight:{count_straight}")
 
+# attempt to identify proper names used in this text
+prop = {}  # map of capitalized words
+for pn, ap in enumerate(paras.parg):
+    s = ap.ptext
+    m = re.finditer(r'\p{Lu}\p{Ll}+', s)
+    for item in m:
+        theword = item.group(0)
+        if theword in prop:
+            prop[theword] += 1
+        else:
+            prop[theword] = 1
+# any capitalized word that is not in the wordlist as lower-case 
+# and that occurs at least twice is maybe a proper name
+for item in prop:
+    if not item.lower() in theWordlist and prop[item] >= 2:
+        proper_names.append(item)
+
 # run tests, paragraph at-a-time
 for pn, ap in enumerate(paras.parg):
     s = ap.ptext # get a paragraph as one string
@@ -342,6 +359,23 @@ for pn, ap in enumerate(paras.parg):
         if not re.match(r"\d+(st|nd|rd|th)", theword):
             report2(pn, item, f"mixed numbers/letters in word {item.group(2)}")
 
+    # period/comma suspect
+    # period, space, lower-case letter
+    # meant to catch "You never know. inevitably, where you will find her."
+    m = re.finditer(r'\. \p{Ll}', s)
+    for item in m:
+        report2(pn, item, f"period/comma suspect")
+    # comma, space, capitalized word that's also in wordlist in lower-case
+    # meant to catch "He went to the farm, Then he saw her."
+    m = re.finditer(r'\, (\p{Lu}\p{L}+)', s)
+    for item in m:
+        # allow "If you say so, Morgan." using proper names list
+        if theword in proper_names:
+            next
+        theword = item.group(1).lower()
+        if theword in theWordlist:
+            report2(pn, item, f"period/comma suspect")
+    
     # Blank Page placeholder
     m = re.finditer(r'blank page', s, re.IGNORECASE)
     for item in m:
