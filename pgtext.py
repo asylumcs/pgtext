@@ -32,6 +32,7 @@ import datetime
 import regex as re
 import pprint
 import unicodedata
+import time
 
 theWordlist = set([])  # set of words, contractions from wordlist.txt
 reports = {}  # a map of description to list
@@ -678,9 +679,9 @@ for pn, ap in enumerate(paras.parg): # paragraph at a time
 with open(args["outfile"], "w") as f:
     f.write("<pre>")
     f.write("pgtext run report\n")
-    f.write(f"run started: {str(datetime.datetime.now())}\n");
+    f.write(f"run started: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
     f.write("source file: {}\n".format(os.path.basename(args['infile'])))
-    f.write(f"<span style='background-color:#FFFFDD'>close this window to return to the UWB.</span>\n");
+    f.write(f"<span style='color:silver'>close this window to return to the UWB.</span>\n")
     f.write("\n")
 
     for line in reports3:
@@ -690,7 +691,7 @@ with open(args["outfile"], "w") as f:
     # reports is a map. convert to list and sort
     rlist = sorted(list(reports))
     for k in rlist:
-        f.write(f"{k}\n")
+        f.write(f"<div style='padding-left:0.6em; margin-top:1em; background-color:papayawhip;'>{k}</div>")
         count = 0
         limit = 4
         if args["verbose"]:
