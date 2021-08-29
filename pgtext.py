@@ -251,7 +251,7 @@ for pn, ap in enumerate(paras.parg):
             prop[theword] = 1
 
 # dictionary words that are common names
-special_prop = ["Bud", "Will", "Jack"]
+special_prop = ["Bud", "Will", "Jack", "Jimmy", "Carol", "Amber", "Mark", "Scott", "Frank"]
 
 # any capitalized word that is not in the wordlist as lower-case 
 # and that occurs at least twice is maybe a proper name
@@ -260,7 +260,7 @@ for item in prop:
         proper_names.append(item)    
     if not item.lower() in theWordlist and prop[item] >= 2:
         proper_names.append(item)
-        
+  
 # save proper names with mixed capitalization
 for item in proper_names:
     if re.search(r'.\p{Ll}\p{Lu}|.\p{Lu}\p{Ll}', item):
