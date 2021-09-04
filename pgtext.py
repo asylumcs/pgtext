@@ -214,8 +214,10 @@ def report2(pn, item, desc):
     if f"{theline} {wb[theline]}" not in reports[desc]:
         reports[desc].append(f"{theline} {wb[theline]}")
 
-def report3(s):
+def report3(s, highlight=False):
     """ top level reports, not associated with a line number """
+    if highlight:
+        s = f"<span style='padding-left:0.6em; margin-top:1em; background-color:papayawhip;'>{s}</span>"
     reports3.append(s)
 
 # determine if the text uses straight or curly quotes. use that to
@@ -296,7 +298,7 @@ for pn, ap in enumerate(paras.parg):
 
 # every entry in nhypwp represents a match hyp and non-hyp same phrase
 if len(nhypwp) > 0:
-    report3("hyphenation/non-hyphenation phrase report")
+    report3("hyphenation/non-hyphenation phrase report", True)
     for thephrase in nhypwp:
         hthephrase = re.sub(' ', '-', thephrase)
         report3( f"  \"{thephrase}\" ({nhypwp[thephrase]}) <-> \"{hthephrase}\" ({hypwp[hthephrase]})")
@@ -552,9 +554,13 @@ for pn, ap in enumerate(paras.parg):
     for item in m:
         report2(pn, item, 'suspect ellipsis check')
 
-    # now a small FSM to deal with punctuation.
-    # only works if smart quotes.
+# run quote tests, paragraph at-a-time
+# use a small FSM to deal with punctuation.
+# only works if smart quotes.
 
+any_reported = False
+for pn, ap in enumerate(paras.parg):
+    s = ap.ptext # get a paragraph as one string
     if count_curly > 0 and count_straight == 0:
         # hide all known apostrophes
         s2 = re.sub(r"(\p{L})’(\p{L})", r"\1X\2", s)
@@ -567,8 +573,10 @@ for pn, ap in enumerate(paras.parg):
                 if len(stack) == 0 or stack[-1] != '“':
                     stack.append('“')
                 else:
-                    report3(f"check quotes in paragraph starting at line {theline+1}")
-                    report3(f"  {wb[theline]}")
+                    if not any_reported:
+                      report3("quotation mark checks", True)
+                      any_reported = True
+                    report3(f"   {theline+1}: {wb[theline]}")
                     reported = True
                     break
             if c == '”':  # close double quote
@@ -576,8 +584,10 @@ for pn, ap in enumerate(paras.parg):
                 if len(stack) > 0 and stack[-1] == "“":
                     stack.pop()
                 else:
-                    report3(f"check quotes in paragraph starting at line {theline+1}")
-                    report3(f"  {wb[theline]}")
+                    if not any_reported:
+                      report3("quotation mark checks", True)
+                      any_reported = True
+                    report3(f"   {theline+1}: {wb[theline]}")
                     reported = True
                     break
             if c == '‘':  # open single quote
@@ -585,8 +595,10 @@ for pn, ap in enumerate(paras.parg):
                 if len(stack) > 0 and stack[-1] == "“":
                     stack.append('‘')
                 else:
-                    report3(f"check quotes in paragraph starting at line {theline+1}")
-                    report3(f"  {wb[theline]}")
+                    if not any_reported:
+                      report3("quotation mark checks", True)
+                      any_reported = True             
+                    report3(f"   {theline+1}: {wb[theline]}")
                     reported = True
                     break
             if c == '’':  # (maybe) close single quote
@@ -597,15 +609,13 @@ for pn, ap in enumerate(paras.parg):
                     # cannot reliably identify CSQ from apostrophe
                     pass
 
-        # at end of paragraph scan, stack should be empty, or
-        # if can have an open double quote if the
-        # next paragraph starts with an open double quote (continued quote)
-        if not reported and len(stack) == 1 and stack[-1] == '“':
-            # are we at last paragraph? is it a run-on quote?
-            if pn >= paras.npara() - 1 or not wb[paras.startline(pn+1)].startswith("“"):
-                theline = paras.startline(pn)
-                report3(f"check quotes in paragraph starting at line {theline+1}")
-                report3(f"  {wb[theline]}")
+    # we are at the end of a paragraph. report if anythging on stack        
+    if not reported and len(stack) > 0:
+        if not any_reported:
+            report3("")
+            report3("quotation mark checks; paragraphs starting at line indicated", True)
+            any_reported = True
+        report3(f"   {theline+1}: {wb[theline]}")
 
 # some checks are per-line checks so working out of the para class doesn't help
 # trailing space on line
