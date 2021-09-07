@@ -279,7 +279,7 @@ special_prop = [
 ]
 
 # any capitalized word that is not in the wordlist as lower-case
-# and that occurs at least twice is maybe a proper name
+# and that occurs at least twice is perhaps a proper name
 for item in prop:
     if item in special_prop:
         proper_names.append(item)
