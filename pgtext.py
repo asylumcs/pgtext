@@ -292,7 +292,7 @@ for item in proper_names:
         allowed_mixed_case.append(item)
 
 # identify hyphenated words/phrases with counts
-# 'desk-sergeant': 1, 'made-by-the-million': 1 ....
+# 'desk-sergeant': 1, 'made-by-the-million': 1, etc.
 for pn, ap in enumerate(paras.parg):
     s = ap.ptext
     m = re.finditer(r"(\p{L}+)-([\p{L}-]+)", s)
