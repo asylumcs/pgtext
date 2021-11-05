@@ -230,7 +230,7 @@ def report3(s, highlight=False, lineabove=False):
     """top level reports, not associated with a line number"""
     if highlight:
         if lineabove:
-            s = f"<br/><span style='padding-left:0.6em; margin-top:1em; background-color:blue;'>{s}</span>"
+            s = f"<br/><span style='padding-left:0.6em; margin-top:1em; background-color:papayawhip;'>{s}</span>"
         else:
             s = f"<span style='padding-left:0.6em; margin-top:1em; background-color:papayawhip;'>{s}</span>"
     reports3.append(s)
