@@ -727,7 +727,7 @@ if len(longest) > 0:
 shortest.sort(key=lambda a: a[1], reverse=True)
 count = 5
 if len(shortest) > 0:
-    report3("sHort lines:", True, True)
+    report3("short lines:", True, True)
     while len(shortest) > 0 and count > 0:
         atup = shortest.pop()
         report3(f"  {atup[0]+1:5}: {wb[atup[0]]} ({atup[1]})")
