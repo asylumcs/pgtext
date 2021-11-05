@@ -226,10 +226,13 @@ def report2(pn, item, desc):
         reports[desc].append(f"{theline} {wb[theline]}")
 
 
-def report3(s, highlight=False):
+def report3(s, highlight=False, lineabove=False):
     """top level reports, not associated with a line number"""
     if highlight:
-        s = f"<span style='padding-left:0.6em; margin-top:1em; background-color:papayawhip;'>{s}</span>"
+        if lineabove:
+            s = f"<br/><span style='padding-left:0.6em; margin-top:1em; background-color:blue;'>{s}</span>"
+        else:
+            s = f"<span style='padding-left:0.6em; margin-top:1em; background-color:papayawhip;'>{s}</span>"
     reports3.append(s)
 
 
@@ -309,44 +312,44 @@ nh_hypwp = []  # list of non-hyphenated versions of hypwp
 for item in hypwp:
     nh_hypwp.append(re.sub(r"-", " ", item))
 
-for pn, ap in enumerate(paras.parg):
-    s = ap.ptext
-    for lookfor in nh_hypwp:
-        m = re.finditer("\P{L}" + lookfor + "\P{L}", s)
-        for item in m:
-            if lookfor in nhypwp:
-                nhypwp[lookfor] += 1
-            else:
-                nhypwp[lookfor] = 1
+#for pn, ap in enumerate(paras.parg):
+#    s = ap.ptext
+#    for lookfor in nh_hypwp:
+#        m = re.finditer("\P{L}" + lookfor + "\P{L}", s)
+#        for item in m:
+#            if lookfor in nhypwp:
+#                nhypwp[lookfor] += 1
+#            else:
+#                nhypwp[lookfor] = 1
 
 # every entry in nhypwp represents a match hyp and non-hyp same phrase
-if len(nhypwp) > 0:
-    report3("hyphenation/non-hyphenation phrase report", True)
-    for thephrase in nhypwp:
-        hthephrase = re.sub(" ", "-", thephrase)
-        report3(
-            f'  "{thephrase}" ({nhypwp[thephrase]}) <-> "{hthephrase}" ({hypwp[hthephrase]})'
-        )
-        # find up to maxlist of each in the text
-        maxlist = 3
-        count_thephrase = 0
-        count_hthephrase = 0
-        for pn, ap in enumerate(paras.parg):
-            s = ap.ptext  # get a paragraph as one string
-            if count_thephrase < maxlist:
-                m = re.finditer(thephrase, s)
-                for item in m:
-                    line, _ = paras.trlate(pn, item.start())
-                    theline = paras.startline(pn) + line
-                    report3(f"    {theline}: {wb[theline]}")
-                    count_thephrase += 1
-            if count_hthephrase < maxlist:
-                m2 = re.finditer(hthephrase, s)
-                for item in m2:
-                    line, _ = paras.trlate(pn, item.start())
-                    theline = paras.startline(pn) + line
-                    report3(f"    {theline}: {wb[theline]}")
-                    count_hthephrase += 1
+#if len(nhypwp) < 0:
+#    report3("hyphenation/non-hyphenation phrase report", True)
+#    for thephrase in nhypwp:
+#        hthephrase = re.sub(" ", "-", thephrase)
+#        report3(
+#            f'  "{thephrase}" ({nhypwp[thephrase]}) <-> "{hthephrase}" ({hypwp[hthephrase]})'
+#        )
+#        # find up to maxlist of each in the text
+#        maxlist = 3
+#        count_thephrase = 0
+#        count_hthephrase = 0
+#        for pn, ap in enumerate(paras.parg):
+#            s = ap.ptext  # get a paragraph as one string
+#            if count_thephrase < maxlist:
+#                m = re.finditer(thephrase, s)
+#                for item in m:
+#                    line, _ = paras.trlate(pn, item.start())
+#                    theline = paras.startline(pn) + line
+#                    report3(f"    {theline}: {wb[theline]}")
+#                    count_thephrase += 1
+#            if count_hthephrase < maxlist:
+#                m2 = re.finditer(hthephrase, s)
+#                for item in m2:
+#                    line, _ = paras.trlate(pn, item.start())
+#                    theline = paras.startline(pn) + line
+#                    report3(f"    {theline}: {wb[theline]}")
+#                    count_hthephrase += 1
 
 # run tests, paragraph at-a-time
 for pn, ap in enumerate(paras.parg):
@@ -615,6 +618,8 @@ for pn, ap in enumerate(paras.parg):
 # only works if smart quotes.
 
 any_reported = False
+stack = []
+reported = False
 for pn, ap in enumerate(paras.parg):
     s = ap.ptext  # get a paragraph as one string
     if count_curly > 0 and count_straight == 0:
@@ -713,7 +718,7 @@ for i in range(len(wb)):
 longest.sort(key=lambda a: a[1])
 count = 5
 if len(longest) > 0:
-    report3("long lines:")
+    report3("long lines:", True, True)
     while len(longest) > 0 and count > 0:
         atup = longest.pop()
         report3(f"  {atup[0]+1:5}: {wb[atup[0]]} ({atup[1]})")
@@ -722,7 +727,7 @@ if len(longest) > 0:
 shortest.sort(key=lambda a: a[1], reverse=True)
 count = 5
 if len(shortest) > 0:
-    report3("short lines:")
+    report3("sHort lines:", True, True)
     while len(shortest) > 0 and count > 0:
         atup = shortest.pop()
         report3(f"  {atup[0]+1:5}: {wb[atup[0]]} ({atup[1]})")
